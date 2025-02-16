@@ -18,7 +18,7 @@ export interface SurveyResult {
 }
 
 const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
+  process.env.REACT_APP_API_BASE_URL || "https://dogeserver.alexshieh.com/api";
 
 /* ---------------------------------------------------------------------------
    PollToggle Component (Button Group with Enhanced Contrast)
