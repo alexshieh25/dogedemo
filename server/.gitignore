@@ -1,0 +1,41 @@
+# Python bytecode files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Django stuff:
+*.log
+*.pot
+*.py[cod]
+*$py.class
+
+# Local environment variables
+.env
+.env.*
+
+# Virtual environment folders
+venv/
+env/
+.virtualenv/
+
+# Media files
+media/
+
+# Machine learning model files (e.g. your poll-specific models)
+vote_prediction_model_*.pkl
+
+# Editor directories and files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Node.js dependencies (if you have a frontend built with Node)
+node_modules/
+build/
+dist/
