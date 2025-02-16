@@ -37,5 +37,3 @@ Thumbs.db
 
 # Node.js dependencies (if you have a frontend built with Node)
 node_modules/
-build/
-dist/
