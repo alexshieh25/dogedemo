@@ -15,3 +15,10 @@ class SurveyResult(models.Model):
 
     def __str__(self):
         return f"{self.poll} - {self.candidate} ({self.id})"
+
+class VoteModel(models.Model):
+    poll = models.CharField(max_length=255, unique=True)
+    serialized_model = models.BinaryField()
+
+    def __str__(self):
+        return self.poll

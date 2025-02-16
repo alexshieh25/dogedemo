@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from .models import SurveyResult
+from .models import SurveyResult, VoteModel
 from .serializers import SurveyResultSerializer
 from polling.model_training import train_vote_model
 from rest_framework.views import APIView
@@ -10,6 +10,7 @@ import os
 import joblib
 import pandas as pd
 from django.conf import settings
+import io
 
 class SurveyResultViewSet(viewsets.ModelViewSet):
     serializer_class = SurveyResultSerializer
@@ -81,23 +82,26 @@ class VotePredictionView(APIView):
         }
         input_df = pd.DataFrame([input_data])
         
-        poll_slug = poll.replace(" ", "_").lower()
-        model_path = os.path.join(settings.BASE_DIR, f'vote_prediction_model_{poll_slug}.pkl')
-        
-        if not os.path.exists(model_path):
+        # Retrieve the stored model from the database.
+        try:
+            vote_model = VoteModel.objects.get(poll=poll)
+        except VoteModel.DoesNotExist:
             return Response(
                 {"error": f"No model found for poll: {poll}. Please train the model first."},
                 status=status.HTTP_404_NOT_FOUND
             )
         
+        # Deserialize the model using joblib.
         try:
-            clf = joblib.load(model_path)
+            buffer = io.BytesIO(vote_model.serialized_model)
+            clf = joblib.load(buffer)
         except Exception as e:
             return Response(
                 {"error": "Model could not be loaded", "details": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
+        # Run prediction on the input data.
         try:
             prediction = clf.predict(input_df)
         except Exception as e:
