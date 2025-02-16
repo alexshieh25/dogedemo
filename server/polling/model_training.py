@@ -5,7 +5,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
-import io
+import pickle
 
 def train_vote_model(poll):
     # Filter data for the specified poll.
@@ -37,9 +37,7 @@ def train_vote_model(poll):
     print("hello")
 
     # Serialize the trained model to bytes.
-    buffer = io.BytesIO()
-    joblib.dump(clf, buffer)
-    model_bytes = buffer.getvalue()
+    model_bytes = pickle.dumps(clf)
 
     # Save or update the model in the database.
     VoteModel.objects.update_or_create(

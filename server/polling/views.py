@@ -10,7 +10,7 @@ import os
 import joblib
 import pandas as pd
 from django.conf import settings
-import io
+import pickle
 
 class SurveyResultViewSet(viewsets.ModelViewSet):
     serializer_class = SurveyResultSerializer
@@ -93,8 +93,7 @@ class VotePredictionView(APIView):
         
         # Deserialize the model using joblib.
         try:
-            buffer = io.BytesIO(vote_model.serialized_model)
-            clf = joblib.load(buffer)
+            clf = pickle.loads(vote_model.serialized_model)
         except Exception as e:
             return Response(
                 {"error": "Model could not be loaded", "details": str(e)},
