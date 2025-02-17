@@ -43,29 +43,30 @@ class Command(BaseCommand):
             },
         }
 
-        candidate_options = ['Candidate A', 'Candidate B', 'Candidate C']
+        # Only two candidates now
+        candidate_options = ['Candidate A', 'Candidate B']
 
         def assign_candidate(poll, age, gender, race, income, urbanity, education):
             # Bias candidate selection based on some demographics.
             if poll == 'Ohio Senate Primary':
                 if age == '18-29':
-                    return random.choices(candidate_options, weights=[70, 20, 10])[0]
+                    return random.choices(candidate_options, weights=[70, 30])[0]
                 elif age == '30-44':
-                    return random.choices(candidate_options, weights=[50, 40, 10])[0]
+                    return random.choices(candidate_options, weights=[50, 50])[0]
                 elif age == '45-64':
-                    return random.choices(candidate_options, weights=[30, 50, 20])[0]
+                    return random.choices(candidate_options, weights=[30, 70])[0]
                 else:
-                    return random.choices(candidate_options, weights=[20, 60, 20])[0]
+                    return random.choices(candidate_options, weights=[20, 80])[0]
             elif poll == 'Florida Senate Primary':
                 if gender == 'Female':
-                    return random.choices(candidate_options, weights=[20, 30, 50])[0]
+                    return random.choices(candidate_options, weights=[20, 80])[0]
                 else:
-                    return random.choices(candidate_options, weights=[30, 30, 40])[0]
+                    return random.choices(candidate_options, weights=[30, 70])[0]
             elif poll == 'New Hampshire Senate Primary':
                 if education == 'college degree':
-                    return random.choices(candidate_options, weights=[60, 25, 15])[0]
+                    return random.choices(candidate_options, weights=[60, 40])[0]
                 else:
-                    return random.choices(candidate_options, weights=[25, 50, 25])[0]
+                    return random.choices(candidate_options, weights=[25, 75])[0]
             return random.choice(candidate_options)
 
         for poll in polls:

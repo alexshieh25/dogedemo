@@ -4,7 +4,7 @@ from polling.models import SurveyResult, VoteModel  # Import VoteModel as well
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.linear_model import LogisticRegression
+from xgboost import XGBClassifier
 import pickle
 
 def train_vote_model(poll):
@@ -18,23 +18,31 @@ def train_vote_model(poll):
 
     X = df[['age', 'gender', 'race', 'income', 'urbanity', 'education']]
     y = df['candidate']
-    print("hello")
+
+    # Convert candidate labels to categorical codes.
+    y_cat = pd.Categorical(y)
+    mapping = dict(enumerate(y_cat.categories))
+    y_encoded = y_cat.codes
+    
     categorical_features = ['age', 'gender', 'race', 'income', 'urbanity', 'education']
     preprocessor = ColumnTransformer(
         transformers=[
-            ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features)
+            # Set sparse=False to return a dense array.
+            ('cat', OneHotEncoder(handle_unknown='ignore', sparse_output=False), categorical_features)
         ]
     )
+    
+    # Create a pipeline with the preprocessor and an XGBoost classifier.
     clf = Pipeline(steps=[
         ('preprocessor', preprocessor),
-        ('classifier', LogisticRegression(max_iter=500))
+        ('classifier', XGBClassifier(eval_metric='logloss'))
     ])
-    
-    print("hello")
 
-    clf.fit(X, y)
+    # Fit using the numeric encoded target.
+    clf.fit(X, y_encoded)
 
-    print("hello")
+    # Store the mapping in the pipeline so that predictions can be decoded later.
+    clf.mapping = mapping
 
     # Serialize the trained model to bytes.
     model_bytes = pickle.dumps(clf)
@@ -44,7 +52,5 @@ def train_vote_model(poll):
         poll=poll,
         defaults={'serialized_model': model_bytes}
     )
-
-    print("hello")
 
     return clf
