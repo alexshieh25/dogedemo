@@ -39,10 +39,10 @@ The front-end is built with TypeScript and React. React optimizes loading time w
 
 ### Iterative Proportional Fitting
 
-Iterative Proprtional Fitting is performed to assign weights to raw data so the sample becomes distributed demographically exactly as is specified by the pre-set targets. It does so by setting a multiplier for each demographic subgroup, weighing rows by the product of all applicable multipliers, and iteratively adjusting the weights category by category until the error is below a certain threshold.
+Iterative Proprtional Fitting is performed to assign weights to raw data so the sample becomes distributed demographically exactly as is specified by the pre-set targets. It does so by setting a multiplier for each demographic subgroup, weighing rows by the product of all applicable multipliers, and iteratively adjusting the multipliers category by category until the difference between the data's distribution and the target distribution is below a certain threshold.
 
-IPF has a runtime of O(rows x columns x iterations), because the constant-time process of reassinging weights occurs this many times. Because this demo has 6 columns and automatically stops the algorithm after 100 iterations, IPF has a worst-case runtime of O(600n), or just O(n), where n is the number of rows.
+IPF has a runtime of O(rows x columns x iterations), because the constant-time process of reassigning weights occurs this many times. Because this demo has 6 columns and automatically stops the algorithm after 100 iterations, IPF has a worst-case runtime of O(600n), or just O(n), where n is the number of rows.
 
-IPF is not mathematically guaranteed to converge, but with typical polling datasets it will. It doesn't converge in edge cases such as when an entire subgroup has 0 members (which will make it impossible to hit a non-zero target), or when two groups (like urban and >100k in income) consist of exactly the same members, causing the algorithim to adjust the weights for those two categories back and forth forever.
+IPF is not mathematically guaranteed to converge, but with typical polling datasets it will. It doesn't converge in edge cases such as when an entire subgroup has 0 members (which will make it impossible to hit a non-zero target), or when two groups (for example urban and >100k in income) consist of exactly the same members (causing the algorithim to adjust the weights for those two categories back and forth forever).
 
 ### XGBoost, SHAP, & Probability Distribution

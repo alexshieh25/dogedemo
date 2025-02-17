@@ -1,4 +1,3 @@
-# polling/utils.py
 from polling.models import SurveyResult
 
 def run_ipf(target_weights, poll, tolerance=0.001, max_iterations=100):
@@ -9,36 +8,32 @@ def run_ipf(target_weights, poll, tolerance=0.001, max_iterations=100):
     target_weights: dict of proportions for each demographic (they should sum to 1 per dimension).
     poll: the poll name for which to run IPF.
     """
-    # Filter responses for the given poll.
+    # Filter responses for the given poll
     responses = list(SurveyResult.objects.filter(poll=poll))
     if not responses:
-        return 0, 0, []  # Nothing to do if no responses.
+        return 0, 0, []  # Nothing to do if no responses
 
     total_weight = sum(response.weight for response in responses)
 
-    # Store the original weight for each response.
     for response in responses:
         response.original_weight = response.weight
 
-    # Convert target proportions into target totals.
     target_totals = {}
     for dim, proportions in target_weights.items():
         target_totals[dim] = {cat: prop * total_weight for cat, prop in proportions.items()}
 
     iteration = 0
-    l1_errors = []  # To record the L1 norm error after each iteration.
+    l1_errors = []
 
     while iteration < max_iterations:
         max_diff = 0
         # For each dimension, adjust weights.
         for dim, targets in target_totals.items():
-            # Calculate current totals for each category.
             current_totals = {cat: 0 for cat in targets.keys()}
             for response in responses:
                 cat = getattr(response, dim)
                 current_totals[cat] += response.weight
 
-            # Update each response's weight for this dimension.
             for response in responses:
                 cat = getattr(response, dim)
                 if current_totals[cat] > 0:
@@ -49,7 +44,7 @@ def run_ipf(target_weights, poll, tolerance=0.001, max_iterations=100):
                     if diff > max_diff:
                         max_diff = diff
 
-        # Compute L1 norm error after updating all dimensions.
+        # Compute error
         l1_error = 0
         for dim, targets in target_totals.items():
             current_totals = {cat: 0 for cat in targets.keys()}
@@ -64,7 +59,7 @@ def run_ipf(target_weights, poll, tolerance=0.001, max_iterations=100):
             break
         iteration += 1
 
-    # Bulk update the weights in the database.
+    # Bulk update weights
     SurveyResult.objects.bulk_update(responses, ['weight'])
 
     return iteration, max_diff, l1_errors

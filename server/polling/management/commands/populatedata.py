@@ -43,11 +43,10 @@ class Command(BaseCommand):
             },
         }
 
-        # Only two candidates now
         candidate_options = ['Candidate A', 'Candidate B']
 
         def assign_candidate(poll, age, gender, race, income, urbanity, education):
-            # Bias candidate selection based on some demographics.
+            # Bias candidate selection
             if poll == 'Ohio Senate Primary':
                 if age == '18-29':
                     return random.choices(candidate_options, weights=[70, 30])[0]
