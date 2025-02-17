@@ -47,6 +47,7 @@ const ToplineResults: React.FC<ToplineResultsProps> = ({
   const [sliderValue, setSliderValue] = useState<number>(50);
 
   useEffect(() => {
+    // When the poll changes, reset the slider and subgroup.
     setSliderValue(50);
     setSelectedSubgroup("");
   }, [selectedPoll]);
@@ -63,6 +64,17 @@ const ToplineResults: React.FC<ToplineResultsProps> = ({
     { label: "Race: Black", value: "race: Black" },
     { label: "Race: Hispanic", value: "race: Hispanic" },
     { label: "Race: Asian", value: "race: Asian" },
+    { label: "Income: <50k", value: "income: <50k" },
+    { label: "Income: 50-100k", value: "income: 50-100k" },
+    { label: "Income: >100k", value: "income: >100k" },
+    { label: "Urbanity: rural", value: "urbanity: rural" },
+    { label: "Urbanity: urban", value: "urbanity: urban" },
+    { label: "Urbanity: suburban", value: "urbanity: suburban" },
+    { label: "Education: college degree", value: "education: college degree" },
+    {
+      label: "Education: no college degree",
+      value: "education: no college degree",
+    },
   ];
 
   const filteredResults = results.filter(
@@ -139,6 +151,7 @@ const ToplineResults: React.FC<ToplineResultsProps> = ({
     ],
   };
 
+  // Only update the slider value when the dropdown changes.
   useEffect(() => {
     if (selectedSubgroup) {
       const [dimension, value] = selectedSubgroup
@@ -160,7 +173,8 @@ const ToplineResults: React.FC<ToplineResultsProps> = ({
         subgroupWeight > 0 ? Math.round((rawA / subgroupWeight) * 100) : 50;
       setSliderValue(newSliderValue);
     }
-  }, [selectedSubgroup, filteredResults]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSubgroup]);
 
   return (
     <div className="topline-results card">
@@ -256,7 +270,7 @@ const ToplineResults: React.FC<ToplineResultsProps> = ({
               min="0"
               max="100"
               value={sliderValue}
-              onChange={(e) => setSliderValue(parseInt(e.target.value))}
+              onChange={(e) => setSliderValue(parseInt(e.target.value, 10))}
             />
           </div>
         )}
