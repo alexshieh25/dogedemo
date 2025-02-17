@@ -353,13 +353,13 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
 
   return (
     <div className="results-table card">
+      <div className="blurb">
+        <p>
+          Scroll through results stored in the database. Delete unwanted
+          results. See weights change in real-time.
+        </p>
+      </div>
       <div className="table-container" style={{ overflowX: "auto" }}>
-        <div className="blurb">
-          <p>
-            Scroll through results stored in the database. Delete unwanted
-            results. See weights change in real-time.
-          </p>
-        </div>
         <table>
           <thead>
             <tr>
@@ -1117,7 +1117,7 @@ const PredictionSection: React.FC<PredictionSectionProps> = ({
         <p>
           When you press train model, the backend uses an XGBoost algorithm to
           train a model on the current survey data. Then you can predict how an
-          individual with known demographic charactaristics would vote. It also
+          individual with known demographic characteristics would vote. It also
           outputs a probability distribution and SHAP analysis, showing how each
           of the user's demographic traits contribute to the result.
         </p>
@@ -1313,12 +1313,13 @@ const App: React.FC = () => {
       </header>
       <div className="outer-blurb">
         <p>
-          This is an open-source data analysis demo I created in a little under
-          48 hours to support my application to DOGE. It is written from
-          scratch, though it's loosely inspired by prior proprietary software I
-          developed that initiated over a million robocalls & texts and was
-          cited by news outlets like Fox News and MSNBC. The source code and
-          design analysis is at{" "}
+          This is an interactive data analysis demo built from scratch in under
+          48 hours to support my application to DOGE. While I’ve worked on
+          large-scale polling projects before — including proprietary software
+          that powered over a million robocalls and was cited by major news
+          outlets like Fox News and MSNBC — this project was an opportunity to
+          build an open-source alternative from first principles. The source
+          code and design analysis is at{" "}
           <a href="https://github.com/alexshieh25/dogedemo" target="_blank">
             https://github.com/alexshieh25/dogedemo
           </a>
