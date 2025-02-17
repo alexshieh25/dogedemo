@@ -17,9 +17,9 @@ import {
 import "./App.css";
 
 const pollCandidates = {
-  "Ohio Senate Primary": ["Alice Johnson", "Bob Smith"],
-  "Florida Senate Primary": ["Carol Lee", "David Kim"],
-  "New Hampshire Senate Primary": ["Eve Davis", "Frank Miller"],
+  "Ohio Senate Primary": ["Candidate A", "Candidate B"],
+  "Florida Senate Primary": ["Candidate A", "Candidate B"],
+  "New Hampshire Senate Primary": ["Candidate A", "Candidate B"],
 };
 
 export interface SurveyResult {
@@ -176,7 +176,12 @@ const SurveyForm: React.FC<SurveyFormProps> = ({
   return (
     <form className="survey-form card" onSubmit={handleSubmit}>
       <h2>Vote in {selectedPoll}</h2>
-
+      <div className="blurb">
+        <p>
+          Add a survey response to the PostgreSQL database. Scroll down for data
+          analysis features.
+        </p>
+      </div>
       <div className="form-group">
         <label>Who do you vote for?</label>
         <div className="radio-group">
@@ -349,6 +354,12 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
   return (
     <div className="results-table card">
       <div className="table-container" style={{ overflowX: "auto" }}>
+        <div className="blurb">
+          <p>
+            Scroll through results stored in the database. Delete unwanted
+            results. See weights change in real-time.
+          </p>
+        </div>
         <table>
           <thead>
             <tr>
@@ -633,6 +644,14 @@ const ToplineResults: React.FC<
   return (
     <div className="topline-results card">
       <h3>Topline Results</h3>
+      <div className="blurb">
+        <p>
+          View the survey results. They are weighted (if IPF has been run).
+          Filter to specific demographics with the toggles. See hypothetical
+          results if demographics changed their voting behavior with the
+          dropdown.
+        </p>
+      </div>
       <div className="filters">
         {/* Existing chip-style filters */}
         <FilterGroup
@@ -677,7 +696,7 @@ const ToplineResults: React.FC<
       <div className="interactive-controls">
         <div className="dropdown-group">
           <label htmlFor="subgroup-dropdown">
-            Select Demographic Subgroup:
+            Reallocate Subgroup Vote Share:
           </label>
           <select
             id="subgroup-dropdown"
@@ -816,6 +835,13 @@ const TargetWeightsForm: React.FC<TargetWeightsFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="target-weights-form card">
       <h2>Target Weights for {poll}</h2>
+      <div className="blurb">
+        <p>
+          Run Iterative Proportional Fitting on the survey data with custom
+          target weights. Running IPF generates a convergence graph and
+          interation stats.
+        </p>
+      </div>
       {Object.entries(weights).map(([dimension, categories]) => (
         <div key={dimension} className="condensed-group">
           <div className="dimension-label">
@@ -896,6 +922,11 @@ const IpfResults: React.FC<IpfResultsProps> = ({
   return (
     <div className="ipf-results card">
       <h3>IPF Results</h3>
+      <div className="blurb">
+        <p>
+          This panel plots the L1 norm throughout successive iterations of IPF.
+        </p>
+      </div>
       <p>Iterations: {iterations}</p>
       {l1Errors.length > 0 ? (
         <div style={{ height: "300px", width: "100%" }}>
@@ -1082,6 +1113,15 @@ const PredictionSection: React.FC<PredictionSectionProps> = ({
   return (
     <div className="prediction-section card">
       <h2>Vote Prediction</h2>
+      <div className="blurb">
+        <p>
+          When you press train model, the backend uses an XGBoost algorithm to
+          train a model on the current survey data. Then you can predict how an
+          individual with known demographic charactaristics would vote. It also
+          outputs a probability distribution and SHAP analysis, showing how each
+          of the user's demographic traits contribute to the result.
+        </p>
+      </div>
       <form onSubmit={handlePredict}>
         <div className="dropdown-group">
           <div className="form-group">
@@ -1179,7 +1219,7 @@ const PredictionSection: React.FC<PredictionSectionProps> = ({
 
       {waterfallChartData && (
         <div className="chart-container">
-          <h3>SHAP Waterfall Explanation</h3>
+          <h3>SHAP Waterfall</h3>
           <Bar data={waterfallChartData} options={waterfallChartOptions} />
         </div>
       )}
@@ -1271,6 +1311,20 @@ const App: React.FC = () => {
       <header>
         <h1>Alex Shieh's DOGE Demo</h1>
       </header>
+      <div className="outer-blurb">
+        <p>
+          This is an open-source data analysis demo I created in a little under
+          48 hours to support my application to DOGE. It is written from
+          scratch, though it's losely inspired by prior prioprietary software I
+          developed that initiated over a million robocalls & texts and was
+          cited by news outlets like Fox News and MSNBC. The source code and
+          design analysis is at{" "}
+          <a href="https://github.com/alexshieh25/dogedemo" target="_blank">
+            https://github.com/alexshieh25/dogedemo
+          </a>
+          .
+        </p>
+      </div>
       <PollToggle
         selectedPoll={selectedPoll}
         setSelectedPoll={setSelectedPoll}

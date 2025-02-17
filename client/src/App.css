@@ -517,3 +517,35 @@ input[type="range"] {
   border-radius: 5px;
   /* Removed appearance properties to keep the native dropdown arrow */
 }
+
+.pos {
+  color: limegreen;
+}
+
+.neg {
+  color: tomato;
+}
+
+.card .blurb {
+  background: #2a2a2a; /* Slightly lighter than the parent card background */
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0 1rem;
+  margin: 1.5rem auto;
+}
+
+.outer-blurb {
+  background: var(--card-bg); /* Slightly lighter than the card background */
+  border-radius: 10px;
+  padding: 0.5rem 1.5rem;
+  margin: 1rem auto; /* Auto margins to center horizontally */
+  max-width: 600px; /* Optional max-width for content constraints */
+}
+
+a:link {
+  color: #fff;
+}
+
+a:visited {
+  color: #fff;
+}
