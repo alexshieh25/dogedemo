@@ -12,10 +12,10 @@ While I’ve worked on large-scale polling projects before — including proprie
 
 Users can
 
-- From the frontend, train a ML (XGBoost) model based off survey data to predict how an individual with known demographic traits will vote. A probability distribution and SHAP analysis of how each characteristic influences the prediction are also computed and graphed.
 - Use iterative proportional fitting to weight the data to meet certain demographic targets and see stats on how long it takes to converge.
 - Read and write to the database, submitting new data and deleting existing data.
 - View interactive data visualizations where the data can be filtered so only certain demographic groups are included. "Hypothetical polling" is also enabled, where users can see what the results would be if subgroups shifted in their voting habits.
+- From the frontend, train a ML (XGBoost) model based off survey data to predict how an individual with known demographic traits will vote. A probability distribution and SHAP analysis of how each characteristic influences the prediction are also computed and graphed.
 
 ## Author Contact
 
@@ -45,4 +45,6 @@ IPF has a runtime of O(rows x columns x iterations), because the constant-time p
 
 IPF is not mathematically guaranteed to converge, but with typical polling datasets it will. It doesn't converge in edge cases such as when an entire subgroup has 0 members (which will make it impossible to hit a non-zero target), or when two groups (for example urban and >100k in income) consist of exactly the same members (causing the algorithim to adjust the weights for those two categories back and forth forever).
 
-### XGBoost, SHAP, & Probability Distribution
+### XGBoost
+
+The predictions are implemeneted using Extra Gradient Boost with one-hot encoding. The one-hot encoding is utilized because attributes like white, black, Hispanic, and Asian have no relation to one another, yet encoding them with the same variable could lead the model to think Asian is closer to Hispanic than white. XGBoost is better at making predictions than alternatives like a logistic regression because independent categories don't necessarily cause additive effects but can be related in non-linear ways; being college-educated is far more decisive of political leanings of those 18-29 than those 65+. XGBoost is also a better choice than Random Forests because RF visits far more trees in a random manner which increases the likelihood of overfitting.
