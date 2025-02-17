@@ -434,3 +434,86 @@ input[type="range"] {
 .button-container button {
   margin-bottom: 1rem; /* Adds spacing between individual buttons */
 }
+
+/* New Interactive Controls for ToplineResults */
+.interactive-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.interactive-controls .dropdown-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.interactive-controls .slider-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.interactive-controls .slider-group label {
+  font-size: 1rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.interactive-controls .slider-group input[type="range"] {
+  /* Use existing range input styles (already defined) */
+  /* Optionally, add some custom styling here */
+  -webkit-appearance: none;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  height: 5px;
+  outline: none;
+  transition: background 0.3s ease;
+}
+
+.interactive-controls .slider-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid var(--secondary-color);
+}
+
+.interactive-controls .slider-group input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid var(--secondary-color);
+}
+
+/* Explicit Dropdown Group Styling for Interactive Controls */
+.interactive-controls .dropdown-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.interactive-controls .dropdown-group label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+.interactive-controls .dropdown-group select {
+  padding: 0.5rem;
+  font-size: 1rem;
+  color: var(--text-color);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  /* Removed appearance properties to keep the native dropdown arrow */
+}

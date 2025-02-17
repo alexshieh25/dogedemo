@@ -1,6 +1,6 @@
 // App.tsx
 import React, { useEffect, useState } from "react";
-import { Bar, Pie } from "react-chartjs-2";
+import { Bar, Pie, Line } from "react-chartjs-2";
 import "chart.js/auto";
 import {
   Chart as ChartJS,
@@ -458,11 +458,15 @@ const FilterGroup: React.FC<FilterGroupProps> = ({
 /* ---------------------------------------------------------------------------
    ToplineResults Component with Chip-Style Graph Filters (All Selected by Default)
 --------------------------------------------------------------------------- */
-type ToplineResultsProps = {
+interface ToplineResultsProps {
   results: SurveyResult[];
-};
+  selectedPoll: string;
+}
 
-const ToplineResults: React.FC<ToplineResultsProps> = ({ results }) => {
+const ToplineResults: React.FC<
+  ToplineResultsProps & { selectedPoll: string }
+> = ({ results, selectedPoll }) => {
+  // Existing filter state for chip-style filters.
   const [filterAges, setFilterAges] = useState<string[]>([
     "18-29",
     "30-44",
@@ -494,6 +498,32 @@ const ToplineResults: React.FC<ToplineResultsProps> = ({ results }) => {
     "no college degree",
   ]);
 
+  // New state for the demographic subgroup and vote reallocation slider.
+  const [selectedSubgroup, setSelectedSubgroup] = useState<string>("");
+  const [sliderValue, setSliderValue] = useState<number>(50); // Candidate A's percentage for the subgroup
+
+  // Reset slider and subgroup when selected poll changes.
+  useEffect(() => {
+    setSliderValue(50);
+    setSelectedSubgroup("");
+  }, [selectedPoll]);
+
+  // Define demographic subgroup options.
+  const demographicOptions = [
+    { label: "None", value: "" },
+    { label: "Age: 18-29", value: "age: 18-29" },
+    { label: "Age: 30-44", value: "age: 30-44" },
+    { label: "Age: 45-64", value: "age: 45-64" },
+    { label: "Age: 65+", value: "age: 65+" },
+    { label: "Gender: Male", value: "gender: Male" },
+    { label: "Gender: Female", value: "gender: Female" },
+    { label: "Race: White", value: "race: White" },
+    { label: "Race: Black", value: "race: Black" },
+    { label: "Race: Hispanic", value: "race: Hispanic" },
+    { label: "Race: Asian", value: "race: Asian" },
+  ];
+
+  // Apply chip filters as before.
   const filteredResults = results.filter(
     (res) =>
       filterAges.includes(res.age) &&
@@ -504,44 +534,107 @@ const ToplineResults: React.FC<ToplineResultsProps> = ({ results }) => {
       filterEducations.includes(res.education)
   );
 
-  const candidateOrder = ["Candidate A", "Candidate B", "Candidate C"];
-
-  const candidateWeights: { [key: string]: number } = {};
+  // Calculate the base candidate weights from filtered results.
+  const baseCandidateWeights: { [key: string]: number } = {};
   filteredResults.forEach((res) => {
-    candidateWeights[res.candidate] =
-      (candidateWeights[res.candidate] || 0) + res.weight;
+    baseCandidateWeights[res.candidate] =
+      (baseCandidateWeights[res.candidate] || 0) + res.weight;
   });
 
-  // Ensure we have keys in our desired order.
-  const orderedCandidates = candidateOrder.filter(
-    (cand) => cand in candidateWeights
-  );
+  // For our demo, assume only Candidate A and Candidate B exist.
+  const candidateOrder = ["Candidate A", "Candidate B"];
 
-  const totalWeight = orderedCandidates.reduce(
-    (sum, cand) => sum + candidateWeights[cand],
+  // Create a copy of baseCandidateWeights that we can adjust.
+  const adjustedCandidateWeights = { ...baseCandidateWeights };
+
+  // Compute subgroup raw data and differences only if a subgroup is selected.
+  let subgroupDiffs: { diffA: number; diffB: number } | null = null;
+  if (selectedSubgroup) {
+    const [dimension, value] = selectedSubgroup.split(":").map((s) => s.trim());
+    const subgroupResults = filteredResults.filter(
+      (res) =>
+        res[dimension as keyof SurveyResult] === value &&
+        (res.candidate === "Candidate A" || res.candidate === "Candidate B")
+    );
+    const subgroupWeight = subgroupResults.reduce(
+      (sum, res) => sum + res.weight,
+      0
+    );
+    const rawA = subgroupResults
+      .filter((res) => res.candidate === "Candidate A")
+      .reduce((sum, res) => sum + res.weight, 0);
+    const rawB = subgroupResults
+      .filter((res) => res.candidate === "Candidate B")
+      .reduce((sum, res) => sum + res.weight, 0);
+    const rawPercentA = subgroupWeight > 0 ? (rawA / subgroupWeight) * 100 : 0;
+    const rawPercentB = subgroupWeight > 0 ? (rawB / subgroupWeight) * 100 : 0;
+    // Compute differences as (new - raw) for each candidate.
+    subgroupDiffs = {
+      diffA: Math.round(sliderValue - rawPercentA),
+      diffB: Math.round(100 - sliderValue - rawPercentB),
+    };
+
+    // Reallocate the subgroup's weight according to the slider.
+    const newA = (sliderValue / 100) * subgroupWeight;
+    const newB = subgroupWeight - newA;
+    adjustedCandidateWeights["Candidate A"] =
+      (adjustedCandidateWeights["Candidate A"] || 0) - rawA + newA;
+    adjustedCandidateWeights["Candidate B"] =
+      (adjustedCandidateWeights["Candidate B"] || 0) - rawB + newB;
+  }
+
+  // Compute overall adjusted total weight and percentages.
+  const adjustedTotalWeight = candidateOrder.reduce(
+    (sum, cand) => sum + (adjustedCandidateWeights[cand] || 0),
     0
   );
-  const candidatePercentages = orderedCandidates.map((candidate) => ({
+  const adjustedCandidatePercentages = candidateOrder.map((candidate) => ({
     candidate,
-    percentage: totalWeight
-      ? ((candidateWeights[candidate] / totalWeight) * 100).toFixed(1)
-      : "0",
+    percentage: adjustedTotalWeight
+      ? (adjustedCandidateWeights[candidate] / adjustedTotalWeight) * 100
+      : 0,
   }));
 
+  // Prepare data for the pie chart.
   const pieData = {
-    labels: orderedCandidates,
+    labels: candidateOrder,
     datasets: [
       {
-        data: orderedCandidates.map((candidate) => candidateWeights[candidate]),
-        backgroundColor: ["#FF6B6B", "#4A90E2", "#DC3545"],
+        data: candidateOrder.map((cand) => adjustedCandidateWeights[cand] || 0),
+        backgroundColor: ["#FF6B6B", "#4A90E2"],
       },
     ],
   };
+
+  // Auto-update the slider value only when the subgroup selection changes.
+  useEffect(() => {
+    if (selectedSubgroup) {
+      const [dimension, value] = selectedSubgroup
+        .split(":")
+        .map((s) => s.trim());
+      const subgroupResults = filteredResults.filter(
+        (res) =>
+          res[dimension as keyof SurveyResult] === value &&
+          (res.candidate === "Candidate A" || res.candidate === "Candidate B")
+      );
+      const subgroupWeight = subgroupResults.reduce(
+        (sum, res) => sum + res.weight,
+        0
+      );
+      const rawA = subgroupResults
+        .filter((res) => res.candidate === "Candidate A")
+        .reduce((sum, res) => sum + res.weight, 0);
+      const newSliderValue =
+        subgroupWeight > 0 ? Math.round((rawA / subgroupWeight) * 100) : 50;
+      setSliderValue(newSliderValue);
+    }
+  }, [selectedSubgroup]);
 
   return (
     <div className="topline-results card">
       <h3>Topline Results</h3>
       <div className="filters">
+        {/* Existing chip-style filters */}
         <FilterGroup
           label="Age"
           options={["18-29", "30-44", "45-64", "65+"]}
@@ -579,10 +672,62 @@ const ToplineResults: React.FC<ToplineResultsProps> = ({ results }) => {
           onChange={setFilterEducations}
         />
       </div>
+
+      {/* New interactive controls */}
+      <div className="interactive-controls">
+        <div className="dropdown-group">
+          <label htmlFor="subgroup-dropdown">
+            Select Demographic Subgroup:
+          </label>
+          <select
+            id="subgroup-dropdown"
+            value={selectedSubgroup}
+            onChange={(e) => setSelectedSubgroup(e.target.value)}
+          >
+            {demographicOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        {selectedSubgroup && (
+          <div className="slider-group">
+            <label htmlFor="vote-slider">
+              Reallocate votes in {selectedSubgroup}:&nbsp; Candidate A:{" "}
+              <strong>{sliderValue}%</strong>
+              {subgroupDiffs && (
+                <span>
+                  {" "}
+                  ({subgroupDiffs.diffA >= 0 ? "+" : ""}
+                  {subgroupDiffs.diffA}%)
+                </span>
+              )}
+              &nbsp;|&nbsp;Candidate B: <strong>{100 - sliderValue}%</strong>
+              {subgroupDiffs && (
+                <span>
+                  {" "}
+                  ({subgroupDiffs.diffB >= 0 ? "+" : ""}
+                  {subgroupDiffs.diffB}%)
+                </span>
+              )}
+            </label>
+            <input
+              id="vote-slider"
+              type="range"
+              min="0"
+              max="100"
+              value={sliderValue}
+              onChange={(e) => setSliderValue(parseInt(e.target.value))}
+            />
+          </div>
+        )}
+      </div>
+
       <div className="candidate-percentages">
-        {candidatePercentages.map((cp) => (
+        {adjustedCandidatePercentages.map((cp) => (
           <p key={cp.candidate}>
-            {cp.candidate}: {cp.percentage}%
+            {cp.candidate}: {cp.percentage.toFixed(1)}%
           </p>
         ))}
       </div>
@@ -705,19 +850,60 @@ const TargetWeightsForm: React.FC<TargetWeightsFormProps> = ({
 };
 
 /* ---------------------------------------------------------------------------
-   IpfResults Component (Display IPF Output)
+   IpfResults Component (Display IPF Output with Convergence Graph)
 --------------------------------------------------------------------------- */
 interface IpfResultsProps {
   iterations: number;
   finalChange: number;
+  l1Errors: number[];
 }
 
-const IpfResults: React.FC<IpfResultsProps> = ({ iterations, finalChange }) => {
+const IpfResults: React.FC<IpfResultsProps> = ({
+  iterations,
+  finalChange,
+  l1Errors,
+}) => {
+  // Create labels for each iteration (1-indexed)
+  const labels = l1Errors.map((_, index) => `${index}`);
+
+  const data = {
+    labels: labels,
+    datasets: [
+      {
+        label: "L1 Norm Error",
+        data: l1Errors,
+        fill: false,
+        borderColor: "#4A90E2",
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        tension: 0.1,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top" as const,
+      },
+      title: {
+        display: true,
+        text: "Convergence of IPF (L1 Norm Error per Iteration)",
+      },
+    },
+  };
+
   return (
     <div className="ipf-results card">
       <h3>IPF Results</h3>
       <p>Iterations: {iterations}</p>
-      <p>Final Change: {finalChange.toFixed(4)}</p>
+      {l1Errors.length > 0 ? (
+        <div style={{ height: "300px", width: "100%" }}>
+          <Line data={data} options={options} />
+        </div>
+      ) : (
+        <p>No convergence data available.</p>
+      )}
     </div>
   );
 };
@@ -1010,13 +1196,18 @@ const PredictionSection: React.FC<PredictionSectionProps> = ({
 /* ---------------------------------------------------------------------------
    Main App Component
 --------------------------------------------------------------------------- */
+
+// Define an interface for IPF results
+interface IpfResultType {
+  iterations: number;
+  finalChange: number;
+  l1Errors: number[];
+}
+
 const App: React.FC = () => {
   const [selectedPoll, setSelectedPoll] = useState("Ohio Senate Primary");
   const [results, setResults] = useState<SurveyResult[]>([]);
-  const [ipfResults, setIpfResults] = useState<{
-    iterations: number;
-    finalChange: number;
-  } | null>(null);
+  const [ipfResults, setIpfResults] = useState<IpfResultType | null>(null);
 
   const fetchResults = async (poll: string) => {
     try {
@@ -1061,10 +1252,11 @@ const App: React.FC = () => {
         throw new Error("Failed to run IPF");
       }
       const data = await response.json();
-      // Expecting data.iterations and data.final_change in the response.
+      // Map the API response fields to our state.
       setIpfResults({
         iterations: data.iterations,
         finalChange: data.final_change,
+        l1Errors: data.l1_errors,
       });
       // Re-fetch the updated survey results (with updated weights).
       fetchResults(selectedPoll);
@@ -1096,10 +1288,11 @@ const App: React.FC = () => {
         <IpfResults
           iterations={ipfResults.iterations}
           finalChange={ipfResults.finalChange}
+          l1Errors={ipfResults.l1Errors}
         />
       )}
       <ResultsTable results={results} onDeleteResult={removeResult} />
-      <ToplineResults results={results} />
+      <ToplineResults results={results} selectedPoll={selectedPoll} />
       <PredictionSection selectedPoll={selectedPoll} />
     </div>
   );

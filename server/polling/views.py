@@ -33,16 +33,17 @@ class RunIPFView(APIView):
                 {"error": "Both 'target_weights' and 'poll' must be provided."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        iterations, final_change = run_ipf(target_weights, poll)
+        
+        iterations, final_change, l1_errors = run_ipf(target_weights, poll)
         return Response({
             "message": f"IPF algorithm completed for {poll}",
             "iterations": iterations,
             "final_change": final_change,
+            "l1_errors": l1_errors,
         }, status=status.HTTP_200_OK)
 
 class TrainVoteModelView(APIView):
     def post(self, request, format=None):
-
         required_fields = ['poll']
         data = request.data
 
