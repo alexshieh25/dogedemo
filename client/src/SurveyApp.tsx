@@ -1315,7 +1315,7 @@ const App: React.FC = () => {
         <p>
           This is an open-source data analysis demo I created in a little under
           48 hours to support my application to DOGE. It is written from
-          scratch, though it's loosely inspired by prior prioprietary software I
+          scratch, though it's loosely inspired by prior proprietary software I
           developed that initiated over a million robocalls & texts and was
           cited by news outlets like Fox News and MSNBC. The source code and
           design analysis is at{" "}
